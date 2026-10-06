@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>LA CLINIQUE D'AMOUR — COMMUNAUTE SOLIDAIRE</title>
+<title>Clinique d'Amour — Communauté solidaire</title>
 <style>
 *{box-sizing:border-box}
 :root{--bg:#faf7f6;--card:#fff;--tx:#221c1c;--mu:#6b6b6b;--rd:#b8000f;--rd-d:#8d000b;--bd:#e9dede;--ok:#1d8a3a;--sh:0 1px 4px rgba(0,0,0,.06)}
@@ -11,10 +11,9 @@ html{scroll-padding-top:70px}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding-bottom:env(safe-area-inset-bottom,0px)}
 header{position:relative;background:linear-gradient(135deg,var(--rd),var(--rd-d));color:#fff;padding:calc(20px + env(safe-area-inset-top,0px)) 16px 20px;text-align:center}
 header h1{margin:0;font-size:1.55rem;letter-spacing:.3px}
-header p{margin:6px 0 0;opacity:.92;font-size:.9rem}
+header p{margin:6px 0 0;opacity:.92;font-size:.85rem}
 .hdr-btn{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));background:rgba(255,255,255,.16);border:0;color:#fff;border-radius:50%;width:36px;height:36px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
-#themeBtn{right:12px}
-#settingsBtn{right:56px}
+#themeBtn{right:12px}#settingsBtn{right:56px}
 nav{display:flex;gap:4px;overflow-x:auto;padding:8px;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:env(safe-area-inset-top,0px);z-index:20;scrollbar-width:none}
 nav::-webkit-scrollbar{display:none}
 nav button{border:0;background:none;color:var(--tx);padding:8px 14px;border-radius:20px;cursor:pointer;white-space:nowrap;font:inherit;font-size:.93rem}
@@ -62,17 +61,20 @@ footer{text-align:center;color:var(--mu);font-size:.8rem;padding:24px 16px 40px}
 .switch input{width:auto;margin:0;flex-shrink:0}
 .switch span{font-size:.92rem;line-height:1.4}
 .hint{background:var(--bg);border-left:3px solid var(--rd);border-radius:0 8px 8px 0;padding:8px 12px;font-size:.85rem;color:var(--mu);margin:10px 0}
+#syncState{position:fixed;bottom:10px;left:10px;background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:4px 12px;font-size:.75rem;color:var(--mu);z-index:50;box-shadow:var(--sh)}
+#syncState.on{color:var(--ok)}
 </style></head><body>
 
 <header>
   <button id="settingsBtn" class="hdr-btn" onclick="openSettings()" title="Paramètres">⚙️</button>
   <button id="themeBtn" class="hdr-btn" onclick="toggleTheme()" title="Changer de thème">🌓</button>
   <h1>♥ Clinique d'Amour</h1>
-  <p>COMMUNAUTE SOLIDAIRE · AU CONGO ET PARTOUT DANS LE MONDE · #CeQueNousFaisonsEnsembeCaCompte #CliniquementVotre</p>
+  <p>COMMUNAUTE SOLIDAIRE - AU CONGO ET PARTOUT DANS LE MONDE · #CliniquementVotre</p>
 </header>
 <nav id="nav"></nav>
-<main id="app"></main>
+<main id="app"><div class="card"><p>Chargement…</p></div></main>
 <footer>Clinique d'Amour — Avant-projet de charte · Droits &amp; Devoirs</footer>
+<div id="syncState">Connexion…</div>
 
 <div id="settingsModal" class="modal-bg" style="display:none" onclick="if(event.target===this)closeSettings()">
   <div class="modal">
@@ -83,11 +85,8 @@ footer{text-align:center;color:var(--mu);font-size:.8rem;padding:24px 16px 40px}
       <span><b>Mode bureau</b><br>
       <span class="mu">Donne accès à l'onglet Bureau pour valider les demandes et gérer les membres.</span></span>
     </label>
-    <h3>Sauvegarde des données</h3>
-    <p class="mu">Les données sont stockées dans ce navigateur uniquement. Exportez régulièrement.</p>
-    <button class="btn s" onclick="exportData()">⬇ Exporter (.json)</button>
-    <button class="btn s" onclick="document.getElementById('importFile').click()">⬆ Importer (.json)</button>
-    <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importData(this)">
+    <h3>Votre identifiant</h3>
+    <p class="mu" id="uidShow"></p>
     <h3>Démonstration</h3>
     <button class="btn s" onclick="loadDemo()">🎭 Charger des données de démo</button>
     <h3 style="color:var(--rd)">Zone de danger</h3>
@@ -96,11 +95,35 @@ footer{text-align:center;color:var(--mu);font-size:.8rem;padding:24px 16px 40px}
   </div>
 </div>
 
-<script>
-const $=s=>document.querySelector(s);
-const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+<script type="module">
+/* =========================================================
+   FIREBASE — Configuration
+   ========================================================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, doc, setDoc, updateDoc, onSnapshot,
+  getDocs, deleteDoc, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const CH=[
+const firebaseConfig = {
+  apiKey: "AIzaSyB3PJ5ev5CXI8liepndmXD5aJhwd6UMmeU",
+  authDomain: "clinique-damour.firebaseapp.com",
+  projectId: "clinique-damour",
+  storageBucket: "clinique-damour.firebasestorage.app",
+  messagingSenderId: "763303707249",
+  appId: "1:763303707249:web:248871d5a54cc791a411d0"
+};
+
+const app = initializeApp(firebaseConfig);
+const firestore = getFirestore(app);
+
+/* =========================================================
+   OUTILS
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+const CH = [
 {n:"Article 1",t:"Objectif du groupe",b:[{p:"La Clinique d'Amour est une communauté solidaire qui vise à promouvoir la fraternité, l'entraide sociale, la convivialité et la création d'opportunités à travers des activités sociales et économiques communes."}]},
 {n:"Article 2",t:"Respect mutuel et ambiance de groupe",b:[{ul:["La Clinique d'Amour est un espace de détente, d'humour et de taquinerie saine, propre à renforcer les liens fraternels entre membres.","Toutefois, aucune taquinerie ne doit heurter la dignité, la sensibilité ou les convictions d'un membre.","Toute personne s'estimant calomniée ou diabolisée en rapport avec son activité dans le groupe peut le dénoncer, à condition de citer nommément la ou les personnes concernées.","En cas de dénonciation sans preuve ni identification précise, l'auteur de la plainte pourra être suspendu provisoirement pour calomnie injustifiée ou tentative de discorde."]}]},
 {n:"Article 3",t:"Adhésion",b:[{p:"L'adhésion à La Clinique d'Amour est ouverte à toute personne partageant les valeurs de la communauté, sans distinction d'origine, d'ethnie, de religion ou de nationalité."},{p:"Elle est conditionnée par les éléments suivants :"},{ul:["Validation de la candidature par au moins deux membres du bureau de coordination ;","Signature de la Charte d'engagement individuelle, marquant l'acceptation de la charte réglementaire ;","Paiement d'un droit d'entrée non remboursable de 5.000 FCFA."]},{note:"Tout membre adhérant s'engage, par cet acte, à respecter les dispositions de la présente charte ainsi que les valeurs fondamentales de la communauté."}]},
@@ -119,93 +142,107 @@ const CH=[
 {n:"Article 22",t:"Révisions du règlement",b:[{p:"Ce règlement peut être révisé en Assemblée Générale ou par décision du bureau avec l'accord d'au moins 2/3 des membres actifs."}]}
 ];
 
+/* =========================================================
+   ÉTAT
+   ========================================================= */
 const TABS=[['accueil','Accueil'],['charte','Charte'],['adhesion','Adhésion'],['espace','Mon espace'],['admin','Bureau']];
-let tab='accueil',uid=null,isAdmin=false,D={},msg='';
+let tab='accueil',uid=null,isAdmin=false,D={},msg='',firestoreReady=false;
 
-const COL_MAP={demandes:'dem',membres:'mem',ayants:'ay'};
-const watchers={dem:[],mem:[],ay:[]};
-
-function readAll(col){try{return JSON.parse(localStorage.getItem('cad_'+col))||{};}catch(e){return{};}}
-function writeAll(col,data){localStorage.setItem('cad_'+col,JSON.stringify(data));const key=COL_MAP[col];(watchers[key]||[]).forEach(fn=>{try{fn();}catch(e){}});}
-function setDoc(col,id,data){const all=readAll(col);all[id]=data;writeAll(col,all);}
-function updateDoc(col,id,patch){const all=readAll(col);all[id]=Object.assign({},all[id]||{},patch);writeAll(col,all);}
-
-const db={
-  doc:(path)=>{const idx=path.indexOf('/');const col=path.slice(0,idx),id=path.slice(idx+1);return{set:async(data)=>setDoc(col,id,data),update:async(patch)=>updateDoc(col,id,patch)};},
-  collection:(col)=>({onSnapshot:(cb)=>{const key=COL_MAP[col];const handler=()=>{const all=readAll(col);const docs=Object.entries(all).map(([id,data])=>({id,data:()=>data}));cb({docs});};watchers[key].push(handler);handler();return()=>{watchers[key]=watchers[key].filter(h=>h!==handler);};}})
-};
-
+/* Identifiant unique persistant (localStorage car ce n'est PAS une donnée partagée) */
 uid=localStorage.getItem('cad_uid');
 if(!uid){uid='u_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);localStorage.setItem('cad_uid',uid);}
 isAdmin=localStorage.getItem('cad_bureau')==='1';
 
-window.addEventListener('storage',(e)=>{
-  if(!e.key||!e.key.startsWith('cad_'))return;
-  if(e.key==='cad_bureau'){isAdmin=localStorage.getItem('cad_bureau')==='1';if(!isAdmin&&tab==='admin')tab='accueil';}
-  ['dem','mem','ay'].forEach(k=>{const col={dem:'demandes',mem:'membres',ay:'ayants'}[k];D[k]=readAll(col);});
-  render();
-});
+/* =========================================================
+   SYNCHRONISATION TEMPS RÉEL (Firestore)
+   ========================================================= */
+function watch(col,key){
+  const ref=collection(firestore,col);
+  onSnapshot(ref,snap=>{
+    const nd={};
+    snap.docs.forEach(d=>nd[d.id]=d.data());
+    const same=JSON.stringify(D[key]||{})===JSON.stringify(nd);
+    D[key]=nd;
+    if(!same)render();
+  },err=>{
+    console.error('Erreur Firestore:',err);
+    setSync('❌ Erreur : '+err.code,false);
+  });
+}
+function setSync(text,ok){
+  const el=$('#syncState');
+  el.textContent=text;
+  el.className=ok?'on':'';
+}
 
-function watch(col,key){db.collection(col).onSnapshot(snap=>{const nd={};snap.docs.forEach(d=>nd[d.id]=d.data());const same=JSON.stringify(D[key]||{})===JSON.stringify(nd);D[key]=nd;if(!same)render();});}
-
-function openSettings(){$('#bureauToggle').checked=isAdmin;$('#settingsModal').style.display='flex';}
+/* =========================================================
+   PARAMÈTRES
+   ========================================================= */
+function openSettings(){
+  $('#bureauToggle').checked=isAdmin;
+  $('#uidShow').textContent='Ton identifiant : '+uid;
+  $('#settingsModal').style.display='flex';
+}
 function closeSettings(){$('#settingsModal').style.display='none';}
-function setBureauMode(on){isAdmin=on;localStorage.setItem('cad_bureau',on?'1':'0');if(!on&&tab==='admin')tab='accueil';render();}
-
-function exportData(){
-  const payload={version:1,exportedAt:new Date().toISOString(),demandes:readAll('demandes'),membres:readAll('membres'),ayants:readAll('ayants')};
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='clinique-damour-sauvegarde-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();
+function setBureauMode(on){
+  isAdmin=on;
+  localStorage.setItem('cad_bureau',on?'1':'0');
+  if(!on&&tab==='admin')tab='accueil';
+  render();
 }
 
-function importData(input){
-  const file=input.files&&input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=(e)=>{
-    try{
-      const data=JSON.parse(e.target.result);
-      if(!confirm('Importer ces données ? Les données actuelles seront remplacées.'))return;
-      if(data.demandes)localStorage.setItem('cad_demandes',JSON.stringify(data.demandes));
-      if(data.membres)localStorage.setItem('cad_membres',JSON.stringify(data.membres));
-      if(data.ayants)localStorage.setItem('cad_ayants',JSON.stringify(data.ayants));
-      ['dem','mem','ay'].forEach(k=>{const col={dem:'demandes',mem:'membres',ay:'ayants'}[k];D[k]=readAll(col);});
-      alert('Import réussi ✔');render();
-    }catch(err){alert('Fichier invalide : '+err.message);}
-    finally{input.value='';}
-  };
-  reader.readAsText(file);
-}
-
-function resetAll(){
-  if(!confirm('Effacer TOUTES les données ? Action irréversible.'))return;
-  if(!confirm('Vraiment sûr ?'))return;
-  localStorage.removeItem('cad_demandes');localStorage.removeItem('cad_membres');localStorage.removeItem('cad_ayants');
-  ['dem','mem','ay'].forEach(k=>D[k]={});closeSettings();render();alert('Toutes les données ont été effacées.');
-}
-
-function loadDemo(){
+/* =========================================================
+   DÉMO / RESET
+   ========================================================= */
+async function loadDemo(){
   if(!confirm('Charger des données de démonstration ? (remplace les données actuelles)'))return;
-  const now=Date.now();
-  const demandes={
-    'u_demo1':{nom:'Mabiala',prenom:'Grâce',tel:'+242 06 111 22 33',email:'grace@exemple.cg',ville:'Brazzaville',profession:'Enseignante',categorie:'Membre actif',motivation:"J'aimerais contribuer à l'entraide et participer aux actions humanitaires.",statut:'En attente',validations:[],date:new Date(now-86400000*2).toISOString()},
-    'u_demo2':{nom:'Nkodia',prenom:'Josué',tel:'+242 05 444 55 66',email:'josue@exemple.cg',ville:'Pointe-Noire',profession:'Ingénieur',categorie:'Membre actif',motivation:'Rejoindre un réseau solidaire et développer des projets AGR.',statut:'En attente',validations:['u_demoA'],date:new Date(now-86400000).toISOString()}
-  };
-  const membres={
-    'u_demoA':{nom:'Loemba',prenom:'Christelle',tel:'+242 06 777 88 99',email:'christelle@exemple.cg',ville:'Brazzaville',profession:'Comptable',categorie:'Membre actif',motivation:'Membre fondatrice',dateAdhesion:new Date(now-86400000*180).toISOString(),validePar:['u_demoB','u_demoC'],actif:true},
-    'u_demoB':{nom:'Bantsimba',prenom:'Alain',tel:'+242 05 222 33 44',email:'alain@exemple.cg',ville:'Pointe-Noire',profession:'Commercial',categorie:'Membre actif',motivation:'Développer les AGR',dateAdhesion:new Date(now-86400000*150).toISOString(),validePar:['u_demoA','u_demoC'],actif:true},
-    'u_demoC':{nom:'Mpassi',prenom:'Ruth',tel:'+242 06 555 66 77',email:'ruth@exemple.cg',ville:'Brazzaville',profession:'Infirmière',categorie:'Membre sympathisant',motivation:'Soutenir les actions humanitaires',dateAdhesion:new Date(now-86400000*90).toISOString(),validePar:['u_demoA','u_demoB'],actif:true}
-  };
-  const ayants={
-    'u_demoA':{membre:'u_demoA',maj:new Date().toISOString(),liste:[{nom:'Loemba Junior',lien:'Enfant',naissance:'2015-03-12',tel:''},{nom:'Mbemba Paul',lien:'Conjoint(e)',naissance:'1985-07-21',tel:'+242 06 000 11 22'}]},
-    'u_demoB':{membre:'u_demoB',maj:new Date().toISOString(),liste:[{nom:'Bantsimba Marie',lien:'Mère',naissance:'1955-11-02',tel:''}]}
-  };
-  localStorage.setItem('cad_demandes',JSON.stringify(demandes));
-  localStorage.setItem('cad_membres',JSON.stringify(membres));
-  localStorage.setItem('cad_ayants',JSON.stringify(ayants));
-  ['dem','mem','ay'].forEach(k=>{const col={dem:'demandes',mem:'membres',ay:'ayants'}[k];D[k]=readAll(col);});
-  closeSettings();render();alert('Données de démonstration chargées ✔\nAstuce : activez le mode bureau pour valider les demandes.');
+  try{
+    const now=Date.now();
+    const batch=writeBatch(firestore);
+
+    // Vide les collections
+    for(const col of ['demandes','membres','ayants']){
+      const snap=await getDocs(collection(firestore,col));
+      snap.forEach(d=>batch.delete(d.ref));
+    }
+
+    // Demandes
+    batch.set(doc(firestore,'demandes','u_demo1'),{nom:'Mabiala',prenom:'Grâce',tel:'+242 06 111 22 33',email:'grace@exemple.cg',ville:'Brazzaville',profession:'Enseignante',categorie:'Membre actif',motivation:"J'aimerais contribuer à l'entraide.",statut:'En attente',validations:[],date:new Date(now-86400000*2).toISOString()});
+    batch.set(doc(firestore,'demandes','u_demo2'),{nom:'Nkodia',prenom:'Josué',tel:'+242 05 444 55 66',email:'josue@exemple.cg',ville:'Pointe-Noire',profession:'Ingénieur',categorie:'Membre actif',motivation:'Rejoindre un réseau solidaire.',statut:'En attente',validations:['u_demoA'],date:new Date(now-86400000).toISOString()});
+
+    // Membres
+    batch.set(doc(firestore,'membres','u_demoA'),{nom:'Loemba',prenom:'Christelle',tel:'+242 06 777 88 99',email:'christelle@exemple.cg',ville:'Brazzaville',profession:'Comptable',categorie:'Membre actif',motivation:'Membre fondatrice',dateAdhesion:new Date(now-86400000*180).toISOString(),validePar:['u_demoB','u_demoC'],actif:true});
+    batch.set(doc(firestore,'membres','u_demoB'),{nom:'Bantsimba',prenom:'Alain',tel:'+242 05 222 33 44',email:'alain@exemple.cg',ville:'Pointe-Noire',profession:'Commercial',categorie:'Membre actif',motivation:'Développer les AGR',dateAdhesion:new Date(now-86400000*150).toISOString(),validePar:['u_demoA','u_demoC'],actif:true});
+    batch.set(doc(firestore,'membres','u_demoC'),{nom:'Mpassi',prenom:'Ruth',tel:'+242 06 555 66 77',email:'ruth@exemple.cg',ville:'Brazzaville',profession:'Infirmière',categorie:'Membre sympathisant',motivation:'Soutenir les actions',dateAdhesion:new Date(now-86400000*90).toISOString(),validePar:['u_demoA','u_demoB'],actif:true});
+
+    // Ayants
+    batch.set(doc(firestore,'ayants','u_demoA'),{membre:'u_demoA',maj:new Date().toISOString(),liste:[{nom:'Loemba Junior',lien:'Enfant',naissance:'2015-03-12',tel:''},{nom:'Mbemba Paul',lien:'Conjoint(e)',naissance:'1985-07-21',tel:'+242 06 000 11 22'}]});
+    batch.set(doc(firestore,'ayants','u_demoB'),{membre:'u_demoB',maj:new Date().toISOString(),liste:[{nom:'Bantsimba Marie',lien:'Mère',naissance:'1955-11-02',tel:''}]});
+
+    await batch.commit();
+    closeSettings();
+    alert('Données de démonstration chargées ✔\nTout le monde les verra.');
+  }catch(e){alert('Erreur : '+e.message);}
 }
 
+async function resetAll(){
+  if(!confirm('Effacer TOUTES les données de la communauté ? (visible par TOUS les membres)'))return;
+  if(!confirm('Vraiment sûr ? Action irréversible.'))return;
+  try{
+    const batch=writeBatch(firestore);
+    for(const col of ['demandes','membres','ayants']){
+      const snap=await getDocs(collection(firestore,col));
+      snap.forEach(d=>batch.delete(d.ref));
+    }
+    await batch.commit();
+    closeSettings();
+    alert('Toutes les données ont été effacées.');
+  }catch(e){alert('Erreur : '+e.message);}
+}
+
+/* =========================================================
+   THÈME
+   ========================================================= */
 function toggleTheme(){
   const cur=document.documentElement.getAttribute('data-theme');
   const sysDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
@@ -213,13 +250,19 @@ function toggleTheme(){
   document.documentElement.setAttribute('data-theme',next);
 }
 
+/* =========================================================
+   NAVIGATION / RENDU
+   ========================================================= */
 function nav(){$('#nav').innerHTML=TABS.filter(t=>t[0]!=='admin'||isAdmin).map(t=>`<button class="${t[0]===tab?'on':''}" onclick="go('${t[0]}')">${t[1]}</button>`).join('');}
-function go(t){tab=t;msg='';render();window.scrollTo({top:0,behavior:'smooth'});}
+window.go=function(t){tab=t;msg='';render();window.scrollTo({top:0,behavior:'smooth'});};
 
 function captureForm(){const o={};document.querySelectorAll('#app input,#app select,#app textarea').forEach(e=>{if(e.id)o[e.id]=e.type==='checkbox'?e.checked:e.value;});return o;}
 function restoreForm(o){Object.entries(o).forEach(([id,v])=>{const e=document.getElementById(id);if(!e)return;if(e.type==='checkbox')e.checked=v;else e.value=v;});}
 function render(){const st=captureForm();nav();const v={accueil,charte,adhesion,espace,admin}[tab]();$('#app').innerHTML=v;restoreForm(st);}
 
+/* =========================================================
+   ACCUEIL
+   ========================================================= */
 function accueil(){
   const mem=Object.values(D.mem||{}).filter(m=>m.actif!==false);
   const nb=mem.length;
@@ -251,6 +294,9 @@ function accueil(){
     <button class="btn s" onclick="go('charte')">Voir le détail (art. 13)</button></div>`;
 }
 
+/* =========================================================
+   CHARTE
+   ========================================================= */
 function blk(x){
   if(x.p)return `<p>${esc(x.p)}</p>`;
   if(x.h)return `<h4>${esc(x.h)}</h4>`;
@@ -268,16 +314,18 @@ function charte(){
     <div class="arts">${CH.map((a,i)=>`<a href="#art${i}">${esc(a.n)}</a>`).join('')}</div></div>
   ${CH.map((a,i)=>`<div class="card art" id="art${i}"><h3 style="color:var(--rd);margin-top:0">${esc(a.n)} — ${esc(a.t)}</h3>${a.b.map(blk).join('')}</div>`).join('')}`;
 }
-function filterArts(v){v=v.toLowerCase().trim();document.querySelectorAll('.art').forEach(el=>{el.style.display=!v||el.textContent.toLowerCase().includes(v)?'':'none';});}
+window.filterArts=function(v){v=v.toLowerCase().trim();document.querySelectorAll('.art').forEach(el=>{el.style.display=!v||el.textContent.toLowerCase().includes(v)?'':'none';});};
 
+/* =========================================================
+   ADHÉSION
+   ========================================================= */
 function adhesion(){
   const d=D.dem?.[uid],m=D.mem?.[uid];
   if(m)return `<div class="card"><h2>Adhésion</h2><p class="ok">✔ Vous êtes déjà membre de la Clinique d'Amour.</p><p class="mu">Retrouvez votre fiche dans « Mon espace ».</p><button class="btn" onclick="go('espace')">Aller à mon espace</button></div>`;
   if(d)return `<div class="card"><h2>Demande envoyée</h2>
     <p>Statut : <span class="tag">${esc(d.statut)}</span></p>
     <p class="mu">Validations reçues : <b>${(d.validations||[]).length}/2</b> — votre demande doit être validée par au moins deux membres du bureau de coordination (art. 3).</p>
-    <p class="mu">Demande déposée le ${esc((d.date||'').slice(0,10))}.</p>
-    <div class="hint">💡 Astuce : ouvrez les ⚙️ Paramètres pour activer le mode bureau et valider votre propre demande (test).</div></div>`;
+    <p class="mu">Demande déposée le ${esc((d.date||'').slice(0,10))}.</p></div>`;
   return `
   <div class="card"><h2>Demande d'adhésion</h2>
     <p class="mu">Toutes les informations sont confidentielles (art. 18).</p>
@@ -287,42 +335,15 @@ function adhesion(){
       <div><label>Téléphone *</label><input id="f_tel" type="tel"></div>
       <div><label>Email</label><input id="f_email" type="email"></div>
       <div><label>Ville / Localisation</label><select id="f_ville">
-  <optgroup label="🇨🇬 Congo — Départements">
-    <option>Brazzaville</option>
-    <option>Pointe-Noire</option>
-    <option>Dolisie (Loubomo)</option>
-    <option>Nkayi</option>
-    <option>Owando</option>
-    <option>Ouesso</option>
-    <option>Impfondo</option>
-    <option>Madingou</option>
-    <option>Sibiti</option>
-    <option>Djambala</option>
-    <option>Kinkala</option>
-    <option>Ewo</option>
-    <option>Loango (Hinda)</option>
-    <option>Gamboma</option>
-    <option>Mossendjo</option>
-    <option>Mossaka</option>
-    <option>Makoua</option>
-    <option>Boundji</option>
-    <option>Etoumbi</option>
-    <option>Mindouli</option>
-    <option>Loutété</option>
-    <option>Kayes</option>
-    <option>Boko</option>
-    <option>M'Binda</option>
-    <option>Autre ville du Congo</option>
-  </optgroup>
-  <optgroup label="🌍 International">
-    <option>USA</option>
-    <option>Canada</option>
-    <option>Europe</option>
-    <option>Asie</option>
-    <option>Afrique (hors Congo)</option>
-    <option>Autre</option>
-  </optgroup>
-</select></div><option>Autre</option></select></div>
+        <optgroup label="🇨🇬 Congo">
+          <option>Brazzaville</option><option>Pointe-Noire</option><option>Dolisie (Loubomo)</option>
+          <option>Nkayi</option><option>Owando</option><option>Ouesso</option><option>Impfondo</option>
+          <option>Madingou</option><option>Sibiti</option><option>Djambala</option><option>Kinkala</option>
+          <option>Ewo</option><option>Loango (Hinda)</option><option>Gamboma</option><option>Mossendjo</option>
+          <option>Autre ville du Congo</option></optgroup>
+        <optgroup label="🌍 International">
+          <option>USA</option><option>Canada</option><option>Europe</option><option>Asie</option>
+          <option>Afrique (hors Congo)</option><option>Autre</option></optgroup></select></div>
       <div><label>Profession</label><input id="f_prof"></div></div>
     <label>Catégorie souhaitée</label>
     <select id="f_cat"><option>Membre actif</option><option>Membre sympathisant</option><option>Membre parrain</option></select>
@@ -338,22 +359,30 @@ function adhesion(){
     <button class="btn s" onclick="go('charte')">Relire la charte</button>
     <div class="msg">${esc(msg)}</div></div>`;
 }
-async function sendDem(){
+window.sendDem=async function(){
   const g=i=>($('#f_'+i).value||'').trim();
   if(!g('nom')||!g('prenom')||!g('tel')){msg='Nom, prénom et téléphone sont obligatoires.';return render();}
   if(!$('#f_ch').checked||!$('#f_pay').checked){msg="Vous devez accepter la charte et le droit d'entrée de 5.000 FCFA.";return render();}
   msg='';
-  try{await db.doc('demandes/'+uid).set({nom:g('nom'),prenom:g('prenom'),tel:g('tel'),email:g('email'),ville:g('ville'),profession:g('prof'),categorie:g('cat'),motivation:g('mot'),statut:'En attente',validations:[],date:new Date().toISOString()});}
-  catch(e){msg='Erreur : '+(e.message||e.code);render();}
-}
+  try{
+    await setDoc(doc(firestore,'demandes',uid),{
+      nom:g('nom'),prenom:g('prenom'),tel:g('tel'),email:g('email'),
+      ville:g('ville'),profession:g('prof'),categorie:g('cat'),
+      motivation:g('mot'),statut:'En attente',validations:[],
+      date:new Date().toISOString()
+    });
+  }catch(e){msg='Erreur : '+e.message;render();}
+};
 
+/* =========================================================
+   MON ESPACE
+   ========================================================= */
 function espace(){
   const m=D.mem?.[uid],d=D.dem?.[uid];
   if(!m){
     if(d)return `<div class="card"><h2>Mon espace</h2>
       <p>Votre demande d'adhésion est <span class="tag">${esc(d.statut)}</span>.</p>
-      <p class="mu">Validations reçues : <b>${(d.validations||[]).length}/2</b>. Votre espace membre s'activera automatiquement dès la validation par deux membres du bureau.</p>
-      <div class="hint">💡 Astuce : activez le mode bureau dans ⚙️ Paramètres pour valider des demandes.</div>
+      <p class="mu">Validations reçues : <b>${(d.validations||[]).length}/2</b>. Votre espace s'activera dès la validation par deux membres du bureau.</p>
       <button class="btn s" onclick="go('charte')">Relire la charte</button></div>`;
     return `<div class="card"><h2>Mon espace</h2><p>Vous n'êtes pas encore membre de la Clinique d'Amour.</p><button class="btn" onclick="go('adhesion')">Demander l'adhésion</button></div>`;
   }
@@ -377,12 +406,18 @@ function espace(){
     <button class="btn" onclick="addAy()">Ajouter l'ayant droit</button>
     <div class="msg">${esc(msg)}</div></div>`;
 }
-async function saveAy(liste){try{await db.doc('ayants/'+uid).set({liste,membre:uid,maj:new Date().toISOString()});}catch(e){msg='Erreur : '+(e.message||e.code);render();}}
-function addAy(){const n=($('#a_nom').value||'').trim();if(!n){msg="Le nom de l'ayant droit est obligatoire.";return render();}msg='';saveAy([...(D.ay?.[uid]?.liste||[]),{nom:n,lien:$('#a_lien').value,naissance:$('#a_nai').value,tel:$('#a_tel').value}]);}
-function delAy(i){const l=[...(D.ay?.[uid]?.liste||[])];l.splice(i,1);saveAy(l);}
+async function saveAy(liste){
+  try{await setDoc(doc(firestore,'ayants',uid),{liste,membre:uid,maj:new Date().toISOString()});}
+  catch(e){msg='Erreur : '+e.message;render();}
+}
+window.addAy=function(){const n=($('#a_nom').value||'').trim();if(!n){msg="Le nom de l'ayant droit est obligatoire.";return render();}msg='';saveAy([...(D.ay?.[uid]?.liste||[]),{nom:n,lien:$('#a_lien').value,naissance:$('#a_nai').value,tel:$('#a_tel').value}]);};
+window.delAy=function(i){const l=[...(D.ay?.[uid]?.liste||[])];l.splice(i,1);saveAy(l);};
 
+/* =========================================================
+   ADMINISTRATION
+   ========================================================= */
 function admin(){
-  if(!isAdmin)return `<div class="card"><h2>Accès restreint</h2><p>Activez le mode bureau dans ⚙️ Paramètres pour accéder à cet espace.</p><button class="btn" onclick="openSettings()">Ouvrir les paramètres</button></div>`;
+  if(!isAdmin)return `<div class="card"><h2>Accès restreint</h2><p>Activez le mode bureau dans ⚙️ Paramètres.</p><button class="btn" onclick="openSettings()">Ouvrir les paramètres</button></div>`;
   const dem=Object.entries(D.dem||{});
   const mem=Object.entries(D.mem||{}).filter(([k,m])=>m.actif!==false);
   const att=dem.filter(([k,d])=>d.statut!=='Refusée'&&!D.mem?.[k]);
@@ -412,34 +447,57 @@ function admin(){
       <td>${esc(m.prenom)} ${esc(m.nom)}</td><td>${esc(m.categorie)}</td><td>${esc(m.ville)}</td><td>${esc(m.tel)}</td>
       <td>${(ay[k]?.liste||[]).map(a=>esc(a.nom)+' ('+esc(a.lien)+')').join(', ')||'—'}</td>
       <td><button class="btn s danger" onclick="retirer('${k}')">Retirer</button></td></tr>`).join('')}</tbody></table></div>
-    <button class="btn s" onclick="exportCSV()">⬇ Exporter en CSV</button>
-    <button class="btn s" onclick="openSettings()">⚙️ Sauvegarde complète</button></div>
+    <button class="btn s" onclick="exportCSV()">⬇ Exporter en CSV</button></div>
   ${ref.length?`<div class="card"><h2>Demandes refusées</h2>${ref.map(([k,d])=>`<div class="item">
     <b>${esc(d.prenom)} ${esc(d.nom)}</b> <span class="mu">— ${esc((d.date||'').slice(0,10))}</span>
     <button class="btn s" onclick="reouvrir('${k}')">Réexaminer</button></div>`).join('')}</div>`:''}`;
 }
-function filterRows(v){v=(v||'').toLowerCase();document.querySelectorAll('#memTable tbody tr').forEach(tr=>{tr.style.display=tr.textContent.toLowerCase().includes(v)?'':'none';});}
-async function valid(k){const d=D.dem?.[k];if(!d)return;const v=[...new Set([...(d.validations||[]),uid])];
-  try{if(v.length>=2){
-    await db.doc('membres/'+k).set({nom:d.nom,prenom:d.prenom,tel:d.tel,email:d.email||'',ville:d.ville,profession:d.profession||'',categorie:d.categorie,motivation:d.motivation||'',dateAdhesion:new Date().toISOString(),validePar:v,actif:true});
-    await db.doc('demandes/'+k).update({validations:v,statut:'Validée',dateValidation:new Date().toISOString()});
-  }else{await db.doc('demandes/'+k).update({validations:v});}}catch(e){alert(e.message||e.code);}}
-async function refus(k){if(!confirm('Refuser cette demande d\'adhésion ?'))return;try{await db.doc('demandes/'+k).update({statut:'Refusée',refusePar:uid});}catch(e){alert(e.message||e.code);}}
-async function reouvrir(k){try{await db.doc('demandes/'+k).update({statut:'En attente',validations:[]});}catch(e){alert(e.message||e.code);}}
-async function retirer(k){if(!confirm('Retirer ce membre de la liste ? (art. 4 — NB)'))return;try{await db.doc('membres/'+k).update({actif:false,retireLe:new Date().toISOString()});}catch(e){alert(e.message||e.code);}}
-function exportCSV(){
+window.filterRows=function(v){v=(v||'').toLowerCase();document.querySelectorAll('#memTable tbody tr').forEach(tr=>{tr.style.display=tr.textContent.toLowerCase().includes(v)?'':'none';});};
+
+window.valid=async function(k){
+  const d=D.dem?.[k];if(!d)return;
+  const v=[...new Set([...(d.validations||[]),uid])];
+  try{
+    if(v.length>=2){
+      await setDoc(doc(firestore,'membres',k),{
+        nom:d.nom,prenom:d.prenom,tel:d.tel,email:d.email||'',
+        ville:d.ville,profession:d.profession||'',categorie:d.categorie,
+        motivation:d.motivation||'',dateAdhesion:new Date().toISOString(),
+        validePar:v,actif:true
+      });
+      await updateDoc(doc(firestore,'demandes',k),{validations:v,statut:'Validée',dateValidation:new Date().toISOString()});
+    }else{
+      await updateDoc(doc(firestore,'demandes',k),{validations:v});
+    }
+  }catch(e){alert(e.message);}
+};
+window.refus=async function(k){if(!confirm('Refuser cette demande ?'))return;try{await updateDoc(doc(firestore,'demandes',k),{statut:'Refusée',refusePar:uid});}catch(e){alert(e.message);}};
+window.reouvrir=async function(k){try{await updateDoc(doc(firestore,'demandes',k),{statut:'En attente',validations:[]});}catch(e){alert(e.message);}};
+window.retirer=async function(k){if(!confirm('Retirer ce membre ? (art. 4 — NB)'))return;try{await updateDoc(doc(firestore,'membres',k),{actif:false,retireLe:new Date().toISOString()});}catch(e){alert(e.message);}};
+window.exportCSV=function(){
   const mem=Object.entries(D.mem||{}).filter(([k,m])=>m.actif!==false);
   const rows=[['Nom','Prénom','Catégorie','Ville','Téléphone','Email','Profession','Membre depuis','Ayants droit']];
   mem.forEach(([k,m])=>{rows.push([m.nom,m.prenom,m.categorie,m.ville,m.tel,m.email||'',m.profession||'',(m.dateAdhesion||'').slice(0,10),(D.ay?.[k]?.liste||[]).map(a=>a.nom+' ('+a.lien+')').join(' | ')]);});
   const csv=rows.map(r=>r.map(c=>'"'+String(c??'').replace(/"/g,'""')+'"').join(';')).join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='membres-clinique-damour.csv';document.body.appendChild(a);a.click();a.remove();
-}
+};
 
-['dem','mem','ay'].forEach(k=>{const col={dem:'demandes',mem:'membres',ay:'ayants'}[k];D[k]=readAll(col);});
+window.openSettings=openSettings;
+window.closeSettings=closeSettings;
+window.setBureauMode=setBureauMode;
+window.toggleTheme=toggleTheme;
+window.loadDemo=loadDemo;
+window.resetAll=resetAll;
+
+/* =========================================================
+   DÉMARRAGE
+   ========================================================= */
+setSync('🔄 Synchronisation…',false);
 watch('demandes','dem');
 watch('membres','mem');
 watch('ayants','ay');
 render();
+setTimeout(()=>setSync('✔ Synchronisé (temps réel)',true),1500);
 </script>
 </body></html>
