@@ -188,7 +188,7 @@ let tab = 'accueil';
 let D = { dem:{}, mem:{}, ay:{}, users:{}, messages:[] };
 let msg = '';
 let authMsg = '';
-window.authTab = 'login';
+let authTab = 'login';
 let chatUnsub = null;
 let appStarted = false;
 
@@ -409,8 +409,8 @@ function renderAuth(){
           <p>Communauté solidaire · Congo &amp; monde</p>
         </div>
         <div class="auth-tabs">
-          <button class="${authTab==='login'?'on':''}" onclick="authTab='login';render()">Connexion</button>
-          <button class="${authTab==='signup'?'on':''}" onclick="authTab='signup';render()">Inscription</button>
+          <button class="${authTab==='login'?'on':''}" onclick="switchAuthTab('login')">Connexion</button>
+          <button class="${authTab==='signup'?'on':''}" onclick="switchAuthTab('signup')">Inscription</button>
         </div>
         ${authTab === 'login' ? loginForm : signupForm}
       </div>
@@ -419,7 +419,13 @@ function renderAuth(){
   const el = $('#authMsg');
   if(el && authMsg){ el.textContent = authMsg; el.className = 'auth-msg error'; }
 }
-window.authTab = authTab;
+window.switchAuthTab = function(tabName){
+  authTab = tabName === 'signup' ? 'signup' : 'login';
+  authMsg = '';
+  render();
+};
+
+window.render = render;
 
 function renderApp(){
   const st = captureForm();
