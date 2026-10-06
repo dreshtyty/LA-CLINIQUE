@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Clinique d'Amour — Communauté solidaire</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#faf7f6;--card:#fff;--tx:#221c1c;--mu:#6b6b6b;--rd:#b8000f;--rd-d:#8d000b;--bd:#e9dede;--ok:#1d8a3a;--sh:0 1px 4px rgba(0,0,0,.06)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171212;--card:#221b1b;--tx:#f2eaea;--mu:#b3a5a5;--rd:#ff5a66;--rd-d:#d63c48;--bd:#3a2c2c;--ok:#5dd07f;--sh:0 1px 4px rgba(0,0,0,.4)}}
+:root[data-theme="dark"]{--bg:#171212;--card:#221b1b;--tx:#f2eaea;--mu:#b3a5a5;--rd:#ff5a66;--rd-d:#d63c48;--bd:#3a2c2c;--ok:#5dd07f;--sh:0 1px 4px rgba(0,0,0,.4)}
+html{scroll-padding-top:70px}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding-bottom:env(safe-area-inset-bottom,0px)}
+header{position:relative;background:linear-gradient(135deg,var(--rd),var(--rd-d));color:#fff;padding:calc(16px + env(safe-area-inset-top,0px)) 16px 16px;text-align:center}
+header h1{margin:0;font-size:1.45rem;letter-spacing:.3px}
+header p{margin:4px 0 0;opacity:.92;font-size:.78rem}
+.hdr-btn{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));background:rgba(255,255,255,.16);border:0;color:#fff;border-radius:50%;width:34px;height:34px;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#themeBtn{right:10px}
+#settingsBtn{right:52px}
+#userBar{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;padding:6px 12px;background:rgba(0,0,0,.15);border-radius:99px;font-size:.82rem;max-width:320px;margin-left:auto;margin-right:auto}
+#userBar .avatar{width:28px;height:28px;border-radius:50%;background:#fff;color:var(--rd);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0}
+#userBar .uname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#userBar button{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:6px;padding:3px 8px;font-size:.75rem;cursor:pointer;margin-left:auto}
+nav{display:flex;gap:4px;overflow-x:auto;padding:8px;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:env(safe-area-inset-top,0px);z-index:20;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{border:0;background:none;color:var(--tx);padding:8px 14px;border-radius:20px;cursor:pointer;white-space:nowrap;font:inherit;font-size:.9rem;position:relative}
+nav button.on{background:var(--rd);color:#fff;font-weight:600}
+nav button .badge{position:absolute;top:2px;right:2px;background:#fff;color:var(--rd);font-size:.65rem;border-radius:99px;padding:0 5px;font-weight:700;min-width:16px;text-align:center}
+main{max-width:880px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:var(--sh)}
+h2{color:var(--rd);margin:0 0 10px;font-size:1.15rem}
+h3{margin:16px 0 6px;font-size:1rem}
+h4{margin:14px 0 4px;font-size:.95rem;color:var(--rd)}
+p{margin:8px 0}
+ul{margin:6px 0;padding-left:20px}li{margin:4px 0}
+label{display:block;margin:12px 0 4px;font-size:.88rem;color:var(--mu)}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:9px;background:var(--bg);color:var(--tx);font:inherit;font-size:.95rem}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--rd);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+.btn{background:var(--rd);color:#fff;border:0;padding:11px 18px;border-radius:9px;cursor:pointer;font:inherit;font-weight:600;margin-top:12px}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.s{background:none;color:var(--rd);border:1px solid var(--rd);padding:5px 11px;margin:4px 6px 0 0;font-weight:500;font-size:.85rem}
+.btn.s.danger{color:var(--mu);border-color:var(--bd)}
+.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.78rem;background:var(--bd);color:var(--tx)}
+.tag.ok{background:rgba(29,138,58,.15);color:var(--ok)}
+.mu{color:var(--mu);font-size:.88rem}
+.note{margin-top:10px;padding:10px 12px;border-left:3px solid var(--rd);background:var(--bg);border-radius:0 8px 8px 0;font-size:.9rem}
+.ok{color:var(--ok);font-weight:600}
+.msg{margin-top:10px;font-weight:600;color:var(--rd)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem;margin-top:8px}
+td,th{border:1px solid var(--bd);padding:8px;text-align:left}
+th{background:var(--bg);font-weight:600}
+.item{border-top:1px solid var(--bd);padding:12px 0}
+.item:first-of-type{border-top:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px}
+.stat{background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:10px;text-align:center}
+.stat b{display:block;font-size:1.5rem;color:var(--rd);line-height:1.2}
+.stat span{font-size:.75rem;color:var(--mu)}
+.arts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.arts a{font-size:.8rem;text-decoration:none;color:var(--rd);border:1px solid var(--bd);border-radius:99px;padding:3px 10px}
+.mot{font-style:italic;color:var(--mu);border-left:3px solid var(--bd);padding-left:10px;margin:8px 0}
+footer{text-align:center;color:var(--mu);font-size:.78rem;padding:20px 16px 40px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--card);border-radius:14px;padding:20px;max-width:440px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.modal h2{margin-top:0}
+.switch{display:flex;align-items:center;gap:10px;margin:8px 0;padding:11px 12px;background:var(--bg);border-radius:9px;cursor:pointer;border:1px solid var(--bd)}
+.switch input{width:auto;margin:0;flex-shrink:0}
+.switch span{font-size:.9rem;line-height:1.4}
+.hint{background:var(--bg);border-left:3px solid var(--rd);border-radius:0 8px 8px 0;padding:8px 12px;font-size:.85rem;color:var(--mu);margin:10px 0}
+
+/* ==== AUTH SCREEN ==== */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,var(--rd),var(--rd-d))}
+.auth-card{background:var(--card);border-radius:18px;padding:28px 22px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.auth-logo{text-align:center;margin-bottom:20px}
+.auth-logo .heart{font-size:2.5rem;color:var(--rd)}
+.auth-logo h1{margin:8px 0 4px;font-size:1.4rem;color:var(--tx)}
+.auth-logo p{color:var(--mu);font-size:.82rem;margin:0}
+.auth-tabs{display:flex;border-bottom:2px solid var(--bd);margin-bottom:20px}
+.auth-tabs button{flex:1;background:none;border:0;padding:10px;font:inherit;font-weight:600;cursor:pointer;color:var(--mu);border-bottom:2px solid transparent;margin-bottom:-2px}
+.auth-tabs button.on{color:var(--rd);border-bottom-color:var(--rd)}
+.auth-msg{padding:10px 12px;border-radius:8px;font-size:.88rem;margin:10px 0;display:none}
+.auth-msg.error{background:rgba(184,0,15,.1);color:var(--rd);border:1px solid rgba(184,0,15,.3);display:block}
+.auth-msg.ok{background:rgba(29,138,58,.1);color:var(--ok);border:1px solid rgba(29,138,58,.3);display:block}
+.auth-foot{text-align:center;font-size:.82rem;color:var(--mu);margin-top:16px}
+.auth-foot a{color:var(--rd);cursor:pointer;text-decoration:underline}
+
+/* ==== CHAT ==== */
+#chatBox{background:var(--card);border:1px solid var(--bd);border-radius:14px;display:flex;flex-direction:column;height:calc(100vh - 300px);min-height:400px;overflow:hidden}
+#chatMessages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.msg-bubble{max-width:80%;padding:8px 12px;border-radius:14px;background:var(--bg);border:1px solid var(--bd);word-wrap:break-word;position:relative}
+.msg-bubble.mine{background:var(--rd);color:#fff;align-self:flex-end;border-color:transparent}
+.msg-bubble.mine .msg-author,.msg-bubble.mine .msg-time{color:rgba(255,255,255,.85)}
+.msg-author{font-size:.78rem;font-weight:600;color:var(--rd);margin-bottom:2px}
+.msg-text{font-size:.92rem;line-height:1.4;white-space:pre-wrap;word-break:break-word}
+.msg-time{font-size:.68rem;color:var(--mu);margin-top:3px;text-align:right}
+.msg-del{position:absolute;top:4px;right:6px;background:none;border:0;color:var(--mu);font-size:.75rem;cursor:pointer;opacity:0;transition:opacity .2s}
+.msg-bubble:hover .msg-del{opacity:1}
+.msg-del:hover{color:var(--rd)}
+#chatInput{display:flex;gap:8px;padding:10px;border-top:1px solid var(--bd);background:var(--card)}
+#chatInput input{flex:1;margin:0}
+#chatInput button{background:var(--rd);color:#fff;border:0;border-radius:9px;padding:0 16px;font:inherit;font-weight:600;cursor:pointer}
+#chatInput button:disabled{opacity:.5;cursor:not-allowed}
+.chat-empty{text-align:center;color:var(--mu);padding:40px 20px;font-size:.9rem}
+.typing{font-size:.75rem;color:var(--mu);font-style:italic;padding:0 12px 8px;height:16px}
+
+#loadingScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--rd),var(--rd-d));color:#fff;flex-direction:column;gap:16px}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style></head><body>
+
+<div id="root"></div>
+
+<script type="module">
+/* =========================================================
+   FIREBASE
+   ========================================================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  signOut, onAuthStateChanged, sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, setDoc, updateDoc, getDoc, getDocs,
+  onSnapshot, query, orderBy, limit, deleteDoc, writeBatch, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB3PJsev5CXl8liepndmXD5aJhwd6UMmeU",
+  authDomain: "clinique-damour.firebaseapp.com",
+  projectId: "clinique-damour",
+  storageBucket: "clinique-damour.firebasestorage.app",
+  messagingSenderId: "763303707249",
+  appId: "1:763303707249:web:248871d5a54cc791a411d0"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const firestore = getFirestore(app);
+
+/* =========================================================
+   OUTILS
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtTime = ts => {
+  if(!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const now = new Date();
+  const diff = (now - d) / 1000;
+  if(diff < 60) return 'à l\'instant';
+  if(diff < 3600) return Math.floor(diff/60) + ' min';
+  if(diff < 86400) return d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+};
+const initials = (p,n) => ((p||'?')[0] + (n||'?')[0]).toUpperCase();
+
+/* =========================================================
+   CHARTE
+   ========================================================= */
+const CH = [
+{n:"Article 1",t:"Objectif du groupe",b:[{p:"La Clinique d'Amour est une communauté solidaire qui vise à promouvoir la fraternité, l'entraide sociale, la convivialité et la création d'opportunités à travers des activités sociales et économiques communes."}]},
+{n:"Article 2",t:"Respect mutuel et ambiance de groupe",b:[{ul:["La Clinique d'Amour est un espace de détente, d'humour et de taquinerie saine, propre à renforcer les liens fraternels entre membres.","Toutefois, aucune taquinerie ne doit heurter la dignité, la sensibilité ou les convictions d'un membre.","Toute personne s'estimant calomniée ou diabolisée en rapport avec son activité dans le groupe peut le dénoncer, à condition de citer nommément la ou les personnes concernées.","En cas de dénonciation sans preuve ni identification précise, l'auteur de la plainte pourra être suspendu provisoirement pour calomnie injustifiée ou tentative de discorde."]}]},
+{n:"Article 3",t:"Adhésion",b:[{p:"L'adhésion à La Clinique d'Amour est ouverte à toute personne partageant les valeurs de la communauté, sans distinction d'origine, d'ethnie, de religion ou de nationalité."},{p:"Elle est conditionnée par les éléments suivants :"},{ul:["Validation de la candidature par au moins deux membres du bureau de coordination ;","Signature de la Charte d'engagement individuelle, marquant l'acceptation de la charte réglementaire ;","Paiement d'un droit d'entrée non remboursable de 5.000 FCFA."]},{note:"Tout membre adhérant s'engage, par cet acte, à respecter les dispositions de la présente charte ainsi que les valeurs fondamentales de la communauté."}]},
+{n:"Article 4",t:"Qualité de membre",b:[{h:"a. Membre actif"},{ul:["Toute personne ayant signé la Charte d'engagement individuelle ;","Qui est à jour de ses cotisations ;","Qui participe activement à la vie de la communauté."]},{p:"Les membres actifs bénéficient pleinement de tous les avantages, soutiens et droits prévus par la charte réglementaire."},{h:"b. Membre sympathisant"},{ul:["Toute personne présente sur les plateformes de la communauté ;","Qui respecte les règles de fonctionnement du groupe ;","Mais qui n'est pas tenue de participer aux cotisations ou aux activités sociales."]},{p:"Le membre sympathisant n'a pas droit aux soutiens financiers ou avantages réservés aux membres actifs."},{h:"c. Membre parrain"},{ul:["Toute personne, membre du groupe ou non ;","Qui apporte un soutien financier régulier ou ponctuel aux projets, activités ou cas sociaux de la communauté."]},{p:"Le membre parrain est libre de s'impliquer à la hauteur de sa volonté et peut être reconnu publiquement pour sa contribution."},{note:"NB : Toute personne ne se reconnaissant dans aucune de ces trois catégories pourra être retirée du groupe sur décision du bureau, après avertissement."}]},
+{n:"Article 9",t:"Durée du mandat",b:[{p:"Le mandat du Bureau est fixé à douze (12) mois, renouvelable. Un vote de renouvellement ou de remplacement peut être convoqué en cas de :"},{ul:["Manquement grave aux responsabilités ;","Inactivité ou démission ;","Faute éthique ou financière."]},{p:"Le Bureau reste placé sous le regard du Comité de Contrôle et d'Éthique ainsi que de l'Autorité Morale."}]},
+{n:"Article 12",t:"Respect, diffamation et gestion des réclamations",b:[{ul:["La diffamation, la calomnie, les accusations publiques non fondées sont strictement interdites.","Tout membre ayant des reproches adresse un message privé et respectueux au Coordinateur Général, puis attend un retour ou une médiation adéquate dans un délai raisonnable.","Si aucune suite satisfaisante n'est apportée, il peut exprimer publiquement sa plainte dans le respect de la charte."]},{p:"Sanctions possibles : avertissement, suspension temporaire ou exclusion, après avis de la majorité des membres du Bureau."}]},
+{n:"Article 13",t:"Activités de la Clinique",b:[{p:"La Clinique d'Amour organise ses activités autour de 5 commissions stratégiques :"},{ul:["Éducation, Réseautage et Carrière","AGR et Ristournes Solidaires","Vie communautaire et Bien-être (anniversaire des membres : 1.000 F CFA par participant)","Actions humanitaires et Engagement citoyen","Assistance et Projets des membres"]}]},
+{n:"Article 14",t:"Assistance sociale",b:[{h:"Conditions générales"},{p:"L'assistance sociale est réservée aux membres actifs justifiant :"},{ul:["D'une ancienneté d'au moins 6 mois ;","D'être à jour de leurs cotisations mensuelles ;","Et d'une participation régulière à la vie de la communauté."]},{h:"a. Barème des assistances"},{table:[["Événement","Montant de l'assistance","Fonds de caisse"],["Décès du père ou de la mère biologique","5.000 FCFA","5%"],["Décès d'un frère ou d'une sœur biologique","2.500 FCFA","5%"],["Décès d'un enfant biologique","10.000 FCFA","5%"],["Décès du conjoint sous le même toit","10.000 FCFA","5%"],["Décès du membre","10.000 FCFA","0%"],["Dot traditionnelle","5.000 FCFA","5%"],["Dot + mariage civil/officiel (après 1 an)","10.000 FCFA","10%"],["Hospitalisation (séjour ≥ 3 nuits)","3.500 FCFA","0%"],["Soutenance pour un diplôme universitaire (membre)","5.000 FCFA","5%"],["Anniversaire de la Clinique","10.000 FCFA","0%"]]},{h:"b. Cas exceptionnels"},{p:"Une levée de fonds spéciale peut être autorisée par le bureau avec la validation des 2/3 de la communauté."},{h:"c. Cadeau mariage"},{p:"Remis sous forme de chèque précisant le montant, à la veille de l'événement, par le Bureau de coordination sous l'œil du comité de contrôle."}]},
+{n:"Article 15",t:"Célébration de l'anniversaire de la Clinique",b:[{p:"Cotisation obligatoire de 10.000 Frs CFA pour tous les membres actifs, présents ou non."},{p:"Organisation rotative entre Brazzaville et Pointe-Noire."},{p:"Le fonds de caisse peut appuyer l'organisation ; toute dépense est validée au préalable par l'Assemblée Générale."}]},
+{n:"Article 16",t:"Sanctions disciplinaires",b:[{p:"Selon la gravité :"},{ul:["Avertissement","Blâme","Suspension temporaire (1 semaine à 1 mois)","Radiation définitive"]},{p:"Les membres du Bureau doivent être exemplaires ; toute faute avérée entraîne une évaluation immédiate de leur maintien en fonction."}]},
+{n:"Article 17",t:"Assemblée Générale et réunions",b:[{p:"L'AGO se tient en présentiel une fois par an : rapport d'activités, bilan financier, programme d'activités, renouvellement du Bureau, questions essentielles."},{p:"Des dispositions techniques facilitent la participation des membres éloignés. Une AGE peut être convoquée en ligne à tout moment."},{p:"Le Bureau se réunit au moins une fois par trimestre."}]},
+{n:"Article 18",t:"Confidentialité et vie privée",b:[{p:"Les échanges et situations personnelles partagés au sein du groupe sont strictement confidentiels."},{p:"Toute capture d'écran, diffusion ou partage extérieur sans autorisation expresse constitue une faute grave."}]},
+{n:"Article 19",t:"Esprit communautaire",b:[{p:"La Clinique n'est pas un espace de règlement de comptes personnels ; tout conflit privé se gère en dehors du groupe."},{p:"Écoute, bienveillance, tolérance et esprit de famille sont les fondements de l'engagement collectif."}]},
+{n:"Article 20",t:"Reconnaissance et distinction",b:[{p:"Des distinctions honorifiques (Membre d'Honneur, Bâtisseur, Pilier, etc.) sont attribuées chaque année lors de l'anniversaire de la communauté."}]},
+{n:"Article 21",t:"Dissolution ou évolution",b:[{p:"En cas de dissolution, de crise majeure ou d'évolution structurelle, une Assemblée Générale est convoquée."},{p:"La Clinique pourra évoluer en association légalement constituée. Un avenant définira le fonctionnement des AGR."}]},
+{n:"Article 22",t:"Révisions du règlement",b:[{p:"Le règlement peut être révisé en Assemblée Générale ou par décision du bureau avec l'accord d'au moins 2/3 des membres actifs."}]}
+];
+
+/* =========================================================
+   ÉTAT GLOBAL
+   ========================================================= */
+const BUREAU_CODE = "BUREAU2026"; // Code secret pour devenir membre du bureau à l'inscription
+let currentUser = null;
+let userProfile = null;
+let authReady = false;
+let tab = 'accueil';
+let D = { dem:{}, mem:{}, ay:{}, users:{}, messages:[] };
+let msg = '';
+let authMsg = '';
+let authTab = 'login';
+let chatUnsub = null;
+let appStarted = false;
+
+/* =========================================================
+   AUTHENTIFICATION
+   ========================================================= */
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+  if(user){
+    try {
+      const snap = await getDoc(doc(firestore, 'users', user.uid));
+      if(snap.exists()){
+        userProfile = snap.data();
+      } else {
+        // Profil inexistant : à créer via le formulaire d'inscription
+        userProfile = { email: user.email, role: 'membre' };
+      }
+    } catch(e){
+      console.error('Erreur chargement profil:', e);
+      userProfile = { email: user.email, role: 'membre' };
+    }
+  } else {
+    userProfile = null;
+  }
+  authReady = true;
+  if(currentUser && !appStarted){
+    appStarted = true;
+    startApp();
+  }
+  render();
+});
+
+/* Inscription */
+window.signup = async function(){
+  const email = ($('#s_email')?.value || '').trim();
+  const pwd = ($('#s_pwd')?.value || '').trim();
+  const nom = ($('#s_nom')?.value || '').trim();
+  const prenom = ($('#s_prenom')?.value || '').trim();
+  const tel = ($('#s_tel')?.value || '').trim();
+  const ville = ($('#s_ville')?.value || '').trim();
+  const code = ($('#s_code')?.value || '').trim();
+
+  if(!email || !pwd || !nom || !prenom){ setAuthMsg('Email, mot de passe, nom et prénom sont obligatoires.', 'error'); return; }
+  if(pwd.length < 6){ setAuthMsg('Le mot de passe doit contenir au moins 6 caractères.', 'error'); return; }
+
+  setAuthMsg('Création du compte…', 'ok');
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pwd);
+    const role = (code === BUREAU_CODE) ? 'bureau' : 'membre';
+    await setDoc(doc(firestore, 'users', cred.user.uid), {
+      email, nom, prenom, tel, ville, role,
+      dateInscription: new Date().toISOString()
+    });
+    setAuthMsg('', '');
+  } catch(e){
+    console.error(e);
+    let m = 'Erreur : ' + e.code;
+    if(e.code === 'auth/email-already-in-use') m = 'Cet email est déjà utilisé.';
+    else if(e.code === 'auth/invalid-email') m = 'Email invalide.';
+    else if(e.code === 'auth/weak-password') m = 'Mot de passe trop faible (6 caractères min).';
+    setAuthMsg(m, 'error');
+  }
+};
+
+/* Connexion */
+window.login = async function(){
+  const email = ($('#l_email')?.value || '').trim();
+  const pwd = ($('#l_pwd')?.value || '').trim();
+  if(!email || !pwd){ setAuthMsg('Email et mot de passe requis.', 'error'); return; }
+  setAuthMsg('Connexion…', 'ok');
+  try {
+    await signInWithEmailAndPassword(auth, email, pwd);
+    setAuthMsg('', '');
+  } catch(e){
+    let m = 'Erreur : ' + e.code;
+    if(e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') m = 'Email ou mot de passe incorrect.';
+    else if(e.code === 'auth/user-not-found') m = 'Aucun compte avec cet email.';
+    else if(e.code === 'auth/too-many-requests') m = 'Trop de tentatives. Réessayez plus tard.';
+    setAuthMsg(m, 'error');
+  }
+};
+
+/* Mot de passe oublié */
+window.resetPwd = async function(){
+  const email = prompt('Entrez votre email pour recevoir le lien de réinitialisation :');
+  if(!email) return;
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert('Email envoyé ! Vérifiez votre boîte de réception.');
+  } catch(e){ alert('Erreur : ' + e.code); }
+};
+
+/* Déconnexion */
+window.logout = async function(){
+  if(!confirm('Se déconnecter ?')) return;
+  if(chatUnsub){ chatUnsub(); chatUnsub = null; }
+  await signOut(auth);
+  appStarted = false;
+  D = { dem:{}, mem:{}, ay:{}, users:{}, messages:[] };
+  tab = 'accueil';
+};
+
+function setAuthMsg(text, type){
+  authMsg = text;
+  const el = $('#authMsg');
+  if(el){ el.textContent = text; el.className = 'auth-msg' + (type ? ' ' + type : ''); }
+}
+
+/* =========================================================
+   DÉMARRAGE APPLICATION
+   ========================================================= */
+function startApp(){
+  // Écoute temps réel des collections
+  onSnapshot(collection(firestore, 'demandes'), snap => {
+    const nd = {}; snap.docs.forEach(d => nd[d.id] = d.data());
+    D.dem = nd; render();
+  });
+  onSnapshot(collection(firestore, 'membres'), snap => {
+    const nd = {}; snap.docs.forEach(d => nd[d.id] = d.data());
+    D.mem = nd; render();
+  });
+  onSnapshot(collection(firestore, 'ayants'), snap => {
+    const nd = {}; snap.docs.forEach(d => nd[d.id] = d.data());
+    D.ay = nd; render();
+  });
+  onSnapshot(collection(firestore, 'users'), snap => {
+    const nd = {}; snap.docs.forEach(d => nd[d.id] = d.data());
+    D.users = nd; render();
+  });
+  // Chat : 100 derniers messages, triés par date
+  const q = query(collection(firestore, 'messages'), orderBy('date', 'asc'), limit(100));
+  chatUnsub = onSnapshot(q, snap => {
+    D.messages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+    scrollChat();
+  });
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+function nav(){
+  const unread = 0; // On pourrait compter les non-lus plus tard
+  const html = TABS
+    .filter(t => t[0] !== 'admin' || (userProfile && userProfile.role === 'bureau'))
+    .map(t => `<button class="${t[0]===tab?'on':''}" onclick="go('${t[0]}')">${t[1]}${t[0]==='chat'&&unread>0?`<span class="badge">${unread}</span>`:''}</button>`)
+    .join('');
+  $('#nav').innerHTML = html;
+}
+const TABS = [['accueil','Accueil'],['charte','Charte'],['chat','Chat 💬'],['adhesion','Adhésion'],['espace','Mon espace'],['admin','Bureau']];
+window.go = function(t){ tab = t; msg = ''; render(); window.scrollTo({top:0,behavior:'smooth'}); };
+
+function captureForm(){
+  const o = {};
+  document.querySelectorAll('input,select,textarea').forEach(e=>{
+    if(e.id) o[e.id] = e.type === 'checkbox' ? e.checked : e.value;
+  });
+  return o;
+}
+function restoreForm(o){
+  Object.entries(o).forEach(([id,v])=>{
+    const e = document.getElementById(id);
+    if(!e) return;
+    if(e.type === 'checkbox') e.checked = v; else e.value = v;
+  });
+}
+
+/* =========================================================
+   RENDU PRINCIPAL
+   ========================================================= */
+function render(){
+  if(!authReady){
+    $('#root').innerHTML = `<div id="loadingScreen"><div class="spinner"></div><p>Chargement…</p></div>`;
+    return;
+  }
+  if(!currentUser){
+    renderAuth();
+    return;
+  }
+  renderApp();
+}
+
+function renderAuth(){
+  const loginForm = `
+    <div class="row" style="grid-template-columns:1fr">
+      <div><label>Email</label><input id="l_email" type="email" autocomplete="email"></div>
+    </div>
+    <label>Mot de passe</label><input id="l_pwd" type="password" autocomplete="current-password">
+    <div class="auth-msg" id="authMsg"></div>
+    <button class="btn" style="width:100%" onclick="login()">Se connecter</button>
+    <div class="auth-foot"><a onclick="resetPwd()">Mot de passe oublié ?</a></div>`;
+
+  const signupForm = `
+    <div class="row">
+      <div><label>Nom *</label><input id="s_nom"></div>
+      <div><label>Prénom *</label><input id="s_prenom"></div>
+    </div>
+    <label>Email *</label><input id="s_email" type="email">
+    <label>Mot de passe * (6 caractères min.)</label><input id="s_pwd" type="password">
+    <div class="row">
+      <div><label>Téléphone</label><input id="s_tel" type="tel"></div>
+      <div><label>Ville</label><select id="s_ville">
+        <option>Brazzaville</option><option>Pointe-Noire</option><option>Dolisie</option>
+        <option>Autre ville du Congo</option><option>USA</option><option>Canada</option>
+        <option>Europe</option><option>Asie</option><option>Autre</option></select></div>
+    </div>
+    <label>Code bureau (réservé aux membres du bureau de coordination)</label>
+    <input id="s_code" placeholder="Laissez vide si vous n'êtes pas du bureau">
+    <div class="auth-msg" id="authMsg"></div>
+    <button class="btn" style="width:100%" onclick="signup()">Créer mon compte</button>`;
+
+  $('#root').innerHTML = `
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <div class="heart">♥</div>
+          <h1>Clinique d'Amour</h1>
+          <p>Communauté solidaire · Congo &amp; monde</p>
+        </div>
+        <div class="auth-tabs">
+          <button class="${authTab==='login'?'on':''}" onclick="switchAuthTab('login')">Connexion</button>
+          <button class="${authTab==='signup'?'on':''}" onclick="switchAuthTab('signup')">Inscription</button>
+        </div>
+        ${authTab === 'login' ? loginForm : signupForm}
+      </div>
+    </div>`;
+  // Replacer le message d'erreur en cours
+  const el = $('#authMsg');
+  if(el && authMsg){ el.textContent = authMsg; el.className = 'auth-msg error'; }
+}
+window.switchAuthTab = function(tabName){
+  authTab = tabName === 'signup' ? 'signup' : 'login';
+  authMsg = '';
+  render();
+};
+
+window.render = render;
+
+function renderApp(){
+  const st = captureForm();
+  const html = `
+    <header>
+      <button id="settingsBtn" class="hdr-btn" onclick="openSettings()" title="Paramètres">⚙️</button>
+      <button id="themeBtn" class="hdr-btn" onclick="toggleTheme()" title="Changer de thème">🌓</button>
+      <img src="LogoClinique.jpg" alt="Clinique d'Amour" style="height:70px;width:auto;margin:0 auto;display:block">
+      <p>COMMUNAUTE SOLIDAIRE - AU CONGO ET PARTOUT DANS LE MONDE · #CliniquementVotre</p>
+      <div id="userBar">
+        <span class="avatar">${esc(initials(userProfile?.prenom, userProfile?.nom))}</span>
+        <span class="uname">${esc((userProfile?.prenom||'') + ' ' + (userProfile?.nom||''))}</span>
+        <button onclick="logout()">Déconnexion</button>
+      </div>
+    </header>
+    <nav id="nav"></nav>
+    <main id="app">${renderTabContent()}</main>
+    <footer>Clinique d'Amour — Avant-projet de charte · Droits &amp; Devoirs</footer>
+    <div id="settingsModal" class="modal-bg" style="display:none" onclick="if(event.target===this)closeSettings()">
+      <div class="modal">
+        <h2>⚙️ Paramètres</h2>
+        <h3>Mon profil</h3>
+        <p class="mu">Nom : <b>${esc(userProfile?.nom||'')} ${esc(userProfile?.prenom||'')}</b></p>
+        <p class="mu">Email : ${esc(userProfile?.email||'')}</p>
+        <p class="mu">Rôle : <span class="tag ${userProfile?.role==='bureau'?'ok':''}">${esc(userProfile?.role||'membre')}</span></p>
+        <p class="mu">UID : <code>${esc(currentUser?.uid||'')}</code></p>
+        <h3>Démonstration</h3>
+        <button class="btn s" onclick="loadDemo()">🎭 Charger des données de démo</button>
+        <h3 style="color:var(--rd)">Zone de danger</h3>
+        <button class="btn s danger" onclick="resetAll()">🗑️ Tout effacer (toutes collections)</button>
+        <button class="btn" style="width:100%;margin-top:20px" onclick="closeSettings()">Fermer</button>
+      </div>
+    </div>`;
+  $('#root').innerHTML = html;
+  nav();
+  restoreForm(st);
+}
+function renderTabContent(){
+  const fns = {accueil, charte, chat, adhesion, espace, admin};
+  return fns[tab] ? fns[tab]() : accueil();
+}
+
+/* =========================================================
+   ACCUEIL
+   ========================================================= */
+function accueil(){
+  const mem = Object.values(D.mem || {}).filter(m => m.actif !== false);
+  const nb = mem.length;
+  const bz = mem.filter(m => m.ville === 'Brazzaville').length;
+  const pn = mem.filter(m => m.ville === 'Pointe-Noire').length;
+  const intl = mem.filter(m => !['Brazzaville','Pointe-Noire','Dolisie','Dolisie (Loubomo)'].includes(m.ville)).length;
+  const actifs = mem.filter(m => m.categorie === 'Membre actif').length;
+  const ayants = Object.values(D.ay || {}).reduce((n,a)=> n + (a.liste || []).length, 0);
+  return `
+  <div class="card">
+    <h2>Bonjour ${esc(userProfile?.prenom||'')} 👋</h2>
+    <p>Bienvenue sur la plateforme de la <b>Clinique d'Amour</b> — communauté solidaire qui promeut la fraternité, l'entraide sociale, la convivialité et la création d'opportunités.</p>
+    <button class="btn" onclick="go('chat')">💬 Rejoindre le chat</button>
+    <button class="btn s" onclick="go('adhesion')">Demander l'adhésion</button>
+    <button class="btn s" onclick="go('charte')">Lire la charte</button>
+  </div>
+  <div class="card"><h2>La communauté en chiffres</h2><div class="stats">
+    <div class="stat"><b>${nb}</b><span>Membres</span></div>
+    <div class="stat"><b>${actifs}</b><span>Actifs</span></div>
+    <div class="stat"><b>${bz}</b><span>Brazzaville</span></div>
+    <div class="stat"><b>${pn}</b><span>Pointe-Noire</span></div>
+    <div class="stat"><b>${intl}</b><span>Diaspora</span></div>
+    <div class="stat"><b>${ayants}</b><span>Ayants droit</span></div>
+  </div></div>
+  <div class="card"><h2>Comment ça marche</h2>
+    <p><b>1.</b> Créez votre compte et connectez-vous.</p>
+    <p><b>2.</b> Remplissez la demande d'adhésion et signez la charte.</p>
+    <p><b>3.</b> Deux membres du bureau valident votre candidature.</p>
+    <p><b>4.</b> Vous accédez à « Mon espace » pour vos ayants droit.</p>
+    <p><b>5.</b> Discutez avec la communauté dans le <b>chat</b>.</p>
+  </div>`;
+}
+
+/* =========================================================
+   CHARTE
+   ========================================================= */
+function blk(x){
+  if(x.p)     return `<p>${esc(x.p)}</p>`;
+  if(x.h)     return `<h4>${esc(x.h)}</h4>`;
+  if(x.ul)    return `<ul>${x.ul.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`;
+  if(x.note)  return `<div class="note">${esc(x.note)}</div>`;
+  if(x.table) return `<div class="scroll"><table>${x.table.map((r,i)=>`<tr>${r.map(c=> i ? `<td>${esc(c)}</td>` : `<th>${esc(c)}</th>`).join('')}</tr>`).join('')}</table></div>`;
+  return '';
+}
+function charte(){
+  return `
+  <div class="card">
+    <h2>Charte de la Clinique d'Amour</h2>
+    <p class="mu">Avant-projet · Droits &amp; Devoirs · #CliniquementVotre</p>
+    <input id="qch" placeholder="Rechercher dans la charte…" oninput="filterArts(this.value)">
+    <div class="arts">${CH.map((a,i)=>`<a href="#art${i}">${esc(a.n)}</a>`).join('')}</div>
+  </div>
+  ${CH.map((a,i)=>`
+    <div class="card art" id="art${i}">
+      <h3 style="color:var(--rd);margin-top:0">${esc(a.n)} — ${esc(a.t)}</h3>
+      ${a.b.map(blk).join('')}
+    </div>`).join('')}`;
+}
+window.filterArts = function(v){
+  v = v.toLowerCase().trim();
+  document.querySelectorAll('.art').forEach(el=>{
+    el.style.display = !v || el.textContent.toLowerCase().includes(v) ? '' : 'none';
+  });
+};
+
+/* =========================================================
+   CHAT
+   ========================================================= */
+function chat(){
+  const msgs = D.messages || [];
+  const myUid = currentUser?.uid;
+  const list = msgs.length
+    ? msgs.map(m => {
+        const mine = m.uid === myUid;
+        const canDelete = mine || userProfile?.role === 'bureau';
+        return `<div class="msg-bubble ${mine?'mine':''}">
+          <div class="msg-author">${esc(m.prenom||'?')} ${esc(m.nom||'')}${userProfile?.role==='bureau'&&D.users[m.uid]?.role==='bureau'?' · 👑':''}</div>
+          <div class="msg-text">${esc(m.texte)}</div>
+          <div class="msg-time">${esc(fmtTime(m.date))}</div>
+          ${canDelete?`<button class="msg-del" onclick="delMsg('${m.id}')" title="Supprimer">✕</button>`:''}
+        </div>`;
+      }).join('')
+    : `<div class="chat-empty">Aucun message pour l'instant.<br>Soyez le premier à dire bonjour ! 👋</div>`;
+
+  return `
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px">
+      <h2 style="margin:0;flex:1">💬 Chat communautaire</h2>
+      <span class="mu">${msgs.length} message${msgs.length>1?'s':''}</span>
+    </div>
+    <div id="chatBox">
+      <div id="chatMessages">${list}</div>
+      <div id="chatInput">
+        <input id="chatInputField" placeholder="Votre message…" maxlength="500"
+               onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}">
+        <button onclick="sendMessage()" id="chatSendBtn">Envoyer</button>
+      </div>
+    </div>
+  </div>
+  <p class="mu" style="text-align:center">Les messages sont visibles par toute la communauté. Restez courtois (art. 2 &amp; 12).</p>`;
+}
+function scrollChat(){
+  const el = $('#chatMessages');
+  if(el) el.scrollTop = el.scrollHeight;
+}
+window.sendMessage = async function(){
+  const inp = $('#chatInputField');
+  const txt = (inp?.value || '').trim();
+  if(!txt || !currentUser) return;
+  inp.value = '';
+  $('#chatSendBtn').disabled = true;
+  try {
+    const id = doc(collection(firestore, 'messages')).id;
+    await setDoc(doc(firestore, 'messages', id), {
+      uid: currentUser.uid,
+      nom: userProfile?.nom || '',
+      prenom: userProfile?.prenom || '',
+      texte: txt,
+      date: serverTimestamp()
+    });
+  } catch(e){
+    alert('Erreur envoi : ' + e.message);
+    inp.value = txt;
+  } finally {
+    $('#chatSendBtn').disabled = false;
+    inp?.focus();
+  }
+};
+window.delMsg = async function(id){
+  if(!confirm('Supprimer ce message ?')) return;
+  try { await deleteDoc(doc(firestore, 'messages', id)); }
+  catch(e){ alert(e.message); }
+};
+
+/* =========================================================
+   ADHÉSION
+   ========================================================= */
+function adhesion(){
+  const uid = currentUser.uid;
+  const d = D.dem?.[uid], m = D.mem?.[uid];
+  if(m) return `<div class="card"><h2>Adhésion</h2><p class="ok">✔ Vous êtes déjà membre de la Clinique d'Amour.</p><p class="mu">Retrouvez votre fiche dans « Mon espace ».</p><button class="btn" onclick="go('espace')">Aller à mon espace</button></div>`;
+  if(d) return `<div class="card"><h2>Demande envoyée</h2>
+    <p>Statut : <span class="tag">${esc(d.statut)}</span></p>
+    <p class="mu">Validations : <b>${(d.validations||[]).length}/2</b> — deux membres du bureau doivent valider (art. 3).</p>
+    <p class="mu">Déposée le ${esc((d.date||'').slice(0,10))}.</p></div>`;
+
+  return `
+  <div class="card"><h2>Demande d'adhésion</h2>
+    <p class="mu">Ces informations sont confidentielles (art. 18).</p>
+    <div class="row">
+      <div><label>Nom *</label><input id="f_nom" value="${esc(userProfile?.nom||'')}"></div>
+      <div><label>Prénom *</label><input id="f_prenom" value="${esc(userProfile?.prenom||'')}"></div>
+      <div><label>Téléphone *</label><input id="f_tel" type="tel" value="${esc(userProfile?.tel||'')}"></div>
+      <div><label>Email</label><input id="f_email" type="email" value="${esc(userProfile?.email||'')}"></div>
+      <div><label>Ville</label><select id="f_ville">
+        <optgroup label="🇨🇬 Congo">
+          <option>Brazzaville</option><option>Pointe-Noire</option><option>Dolisie (Loubomo)</option>
+          <option>Nkayi</option><option>Owando</option><option>Ouesso</option><option>Impfondo</option>
+          <option>Madingou</option><option>Sibiti</option><option>Djambala</option><option>Kinkala</option>
+          <option>Ewo</option><option>Loango (Hinda)</option><option>Gamboma</option><option>Mossendjo</option>
+          <option>Autre ville du Congo</option></optgroup>
+        <optgroup label="🌍 International">
+          <option>USA</option><option>Canada</option><option>Europe</option><option>Asie</option>
+          <option>Afrique (hors Congo)</option><option>Autre</option></optgroup></select></div>
+      <div><label>Profession</label><input id="f_prof"></div>
+    </div>
+    <label>Catégorie souhaitée</label>
+    <select id="f_cat"><option>Membre actif</option><option>Membre sympathisant</option><option>Membre parrain</option></select>
+    <label>Motivation</label>
+    <textarea id="f_mot" rows="3" placeholder="Pourquoi souhaitez-vous rejoindre la Clinique d'Amour ?"></textarea>
+    <label style="display:flex;gap:8px;align-items:flex-start;margin-top:16px">
+      <input type="checkbox" id="f_ch" style="width:auto;margin-top:3px">
+      <span>J'ai lu la charte et je m'engage à la respecter.</span></label>
+    <label style="display:flex;gap:8px;align-items:flex-start">
+      <input type="checkbox" id="f_pay" style="width:auto;margin-top:3px">
+      <span>Je m'engage à payer le droit d'entrée non remboursable de 5.000 FCFA.</span></label>
+    <button class="btn" onclick="sendDem()">Envoyer ma demande</button>
+    <button class="btn s" onclick="go('charte')">Relire la charte</button>
+    <div class="msg">${esc(msg)}</div></div>`;
+}
+window.sendDem = async function(){
+  const g = i => ($('#f_'+i).value || '').trim();
+  if(!g('nom') || !g('prenom') || !g('tel')){ msg='Nom, prénom et téléphone sont obligatoires.'; render(); return; }
+  if(!$('#f_ch').checked || !$('#f_pay').checked){ msg="Vous devez accepter la charte et le droit d'entrée."; render(); return; }
+  msg = '';
+  try {
+    await setDoc(doc(firestore, 'demandes', currentUser.uid), {
+      nom:g('nom'), prenom:g('prenom'), tel:g('tel'), email:g('email'),
+      ville:g('ville'), profession:g('prof'), categorie:g('cat'),
+      motivation:g('mot'), statut:'En attente', validations:[],
+      date: new Date().toISOString()
+    });
+  } catch(e){ msg = 'Erreur : ' + e.message; render(); }
+};
+
+/* =========================================================
+   MON ESPACE
+   ========================================================= */
+function espace(){
+  const uid = currentUser.uid;
+  const m = D.mem?.[uid], d = D.dem?.[uid];
+  if(!m){
+    if(d) return `<div class="card"><h2>Mon espace</h2>
+      <p>Votre demande est <span class="tag">${esc(d.statut)}</span>.</p>
+      <p class="mu">Validations : <b>${(d.validations||[]).length}/2</b>.</p>
+      <button class="btn s" onclick="go('charte')">Relire la charte</button></div>`;
+    return `<div class="card"><h2>Mon espace</h2><p>Vous n'êtes pas encore membre.</p><button class="btn" onclick="go('adhesion')">Demander l'adhésion</button></div>`;
+  }
+  const ay = D.ay?.[uid]?.liste || [];
+  return `
+  <div class="card"><h2>${esc(m.prenom)} ${esc(m.nom)}</h2>
+    <p><span class="tag ok">${esc(m.categorie)}</span> <span class="tag">${esc(m.ville)}</span></p>
+    <p class="mu">Membre depuis le ${esc((m.dateAdhesion||'').slice(0,10))}${m.profession?' · '+esc(m.profession):''}</p>
+    <p class="mu">${esc(m.tel)}${m.email?' · '+esc(m.email):''}</p></div>
+
+  <div class="card"><h2>Mes ayants droit</h2>
+    <p class="mu">Prise en compte pour l'assistance sociale (art. 14) : conjoint, enfants, parents, frères et sœurs biologiques.</p>
+    ${ay.length ? ay.map((a,i)=>`
+      <div class="item">
+        <b>${esc(a.nom)}</b> <span class="tag">${esc(a.lien)}</span>
+        <div class="mu">${a.naissance?'Né(e) le '+esc(a.naissance):''}${a.tel?' · '+esc(a.tel):''}</div>
+        <button class="btn s danger" onclick="delAy(${i})">Retirer</button>
+      </div>`).join('') : '<p class="mu">Aucun ayant droit enregistré.</p>'}
+
+    <h3>Ajouter un ayant droit</h3>
+    <div class="row">
+      <div><label>Nom complet</label><input id="a_nom"></div>
+      <div><label>Lien</label><select id="a_lien">
+        <option>Conjoint(e)</option><option>Enfant</option><option>Père</option>
+        <option>Mère</option><option>Frère</option><option>Sœur</option></select></div>
+      <div><label>Date de naissance</label><input id="a_nai" type="date"></div>
+      <div><label>Téléphone</label><input id="a_tel" type="tel"></div>
+    </div>
+    <button class="btn" onclick="addAy()">Ajouter l'ayant droit</button>
+    <div class="msg">${esc(msg)}</div>
+  </div>`;
+}
+async function saveAy(liste){
+  try {
+    await setDoc(doc(firestore, 'ayants', currentUser.uid), {
+      liste, membre: currentUser.uid, maj: new Date().toISOString()
+    });
+  } catch(e){ msg = 'Erreur : ' + e.message; render(); }
+}
+window.addAy = function(){
+  const n = ($('#a_nom').value || '').trim();
+  if(!n){ msg = "Le nom est obligatoire."; render(); return; }
+  msg = '';
+  const liste = [...(D.ay?.[currentUser.uid]?.liste || []), {
+    nom:n, lien:$('#a_lien').value, naissance:$('#a_nai').value, tel:$('#a_tel').value
+  }];
+  saveAy(liste);
+};
+window.delAy = function(i){
+  const l = [...(D.ay?.[currentUser.uid]?.liste || [])];
+  l.splice(i,1);
+  saveAy(l);
+};
+
+/* =========================================================
+   ADMINISTRATION (BUREAU)
+   ========================================================= */
+function admin(){
+  if(userProfile?.role !== 'bureau')
+    return `<div class="card"><h2>Accès restreint</h2><p>Cet espace est réservé au bureau de coordination.</p></div>`;
+  const dem = Object.entries(D.dem || {});
+  const mem = Object.entries(D.mem || {}).filter(([k,m]) => m.actif !== false);
+  const att = dem.filter(([k,d]) => d.statut !== 'Refusée' && !D.mem?.[k]);
+  const ref = dem.filter(([k,d]) => d.statut === 'Refusée' && !D.mem?.[k]);
+  const ay = D.ay || {};
+  const nbAy = Object.values(ay).reduce((n,a)=> n + (a.liste||[]).length, 0);
+  const users = Object.entries(D.users || {});
+
+  return `
+  <div class="card"><h2>Tableau de bord</h2><div class="stats">
+    <div class="stat"><b>${mem.length}</b><span>Membres</span></div>
+    <div class="stat"><b>${att.length}</b><span>En attente</span></div>
+    <div class="stat"><b>${mem.filter(([k,m])=>m.categorie==='Membre actif').length}</b><span>Actifs</span></div>
+    <div class="stat"><b>${nbAy}</b><span>Ayants droit</span></div>
+  </div></div>
+
+  <div class="card"><h2>Demandes d'adhésion à valider</h2>
+    <p class="mu">Deux validations distinctes requises (art. 3).</p>
+    ${att.map(([k,d])=>{
+      const v = d.validations || [];
+      const deja = v.includes(currentUser.uid);
+      return `<div class="item">
+        <b>${esc(d.prenom)} ${esc(d.nom)}</b> <span class="tag">${esc(d.categorie)}</span>
+        <div class="mu">${esc(d.tel)}${d.email?' · '+esc(d.email):''} · ${esc(d.ville)}</div>
+        <div class="mu">Déposée le ${esc((d.date||'').slice(0,10))}</div>
+        ${d.motivation?`<p class="mot">« ${esc(d.motivation)} »</p>`:''}
+        <div class="mu">Validations : <b>${v.length}/2</b>${deja?' · vous avez déjà validé':''}</div>
+        ${deja?'':`<button class="btn s" onclick="valid('${k}')">✔ Valider</button>`}
+        <button class="btn s danger" onclick="refus('${k}')">✖ Refuser</button>
+      </div>`;
+    }).join('') || '<p class="mu">Aucune demande en attente.</p>'}
+  </div>
+
+  <div class="card"><h2>Liste des membres (${mem.length})</h2>
+    <input id="q" placeholder="Rechercher…" oninput="filterRows(this.value)">
+    <div class="scroll"><table id="memTable">
+      <thead><tr><th>Nom</th><th>Catégorie</th><th>Ville</th><th>Tél.</th><th>Ayants droit</th><th></th></tr></thead>
+      <tbody>${mem.map(([k,m])=>`<tr>
+        <td>${esc(m.prenom)} ${esc(m.nom)}</td>
+        <td>${esc(m.categorie)}</td>
+        <td>${esc(m.ville)}</td>
+        <td>${esc(m.tel)}</td>
+        <td>${(ay[k]?.liste||[]).map(a=>esc(a.nom)+' ('+esc(a.lien)+')').join(', ')||'—'}</td>
+        <td><button class="btn s danger" onclick="retirer('${k}')">Retirer</button></td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+    <button class="btn s" onclick="exportCSV()">⬇ Exporter CSV</button>
+  </div>
+
+  <div class="card"><h2>Gestion des rôles (${users.length} comptes)</h2>
+    <p class="mu">Promouvoir ou rétrograder un membre du bureau.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Nom</th><th>Email</th><th>Rôle</th><th></th></tr></thead>
+      <tbody>${users.map(([uid,u])=>`<tr>
+        <td>${esc(u.prenom||'')} ${esc(u.nom||'')}</td>
+        <td>${esc(u.email||'')}</td>
+        <td><span class="tag ${u.role==='bureau'?'ok':''}">${esc(u.role||'membre')}</span></td>
+        <td>${uid===currentUser.uid ? '<span class="mu">vous</span>' :
+          (u.role==='bureau'
+            ? `<button class="btn s danger" onclick="setRole('${uid}','membre')">Rétrograder</button>`
+            : `<button class="btn s" onclick="setRole('${uid}','bureau')">Promouvoir</button>`)}</td>
+      </tr>`).join('')}</tbody>
+    </table></div>
+  </div>
+
+  ${ref.length ? `<div class="card"><h2>Demandes refusées</h2>
+    ${ref.map(([k,d])=>`<div class="item">
+      <b>${esc(d.prenom)} ${esc(d.nom)}</b> <span class="mu">— ${esc((d.date||'').slice(0,10))}</span>
+      <button class="btn s" onclick="reouvrir('${k}')">Réexaminer</button>
+    </div>`).join('')}
+  </div>` : ''}`;
+}
+window.filterRows = function(v){
+  v = (v||'').toLowerCase();
+  document.querySelectorAll('#memTable tbody tr').forEach(tr=>{
+    tr.style.display = tr.textContent.toLowerCase().includes(v) ? '' : 'none';
+  });
+};
+window.valid = async function(k){
+  const d = D.dem?.[k]; if(!d) return;
+  const v = [...new Set([...(d.validations || []), currentUser.uid])];
+  try {
+    if(v.length >= 2){
+      await setDoc(doc(firestore, 'membres', k), {
+        nom:d.nom, prenom:d.prenom, tel:d.tel, email:d.email || '',
+        ville:d.ville, profession:d.profession || '', categorie:d.categorie,
+        motivation:d.motivation || '', dateAdhesion:new Date().toISOString(),
+        validePar:v, actif:true
+      });
+      await updateDoc(doc(firestore, 'demandes', k), {
+        validations:v, statut:'Validée', dateValidation:new Date().toISOString()
+      });
+    } else {
+      await updateDoc(doc(firestore, 'demandes', k), {validations:v});
+    }
+  } catch(e){ alert(e.message); }
+};
+window.refus = async function(k){
+  if(!confirm('Refuser cette demande ?')) return;
+  try { await updateDoc(doc(firestore, 'demandes', k), {statut:'Refusée', refusePar:currentUser.uid}); }
+  catch(e){ alert(e.message); }
+};
+window.reouvrir = async function(k){
+  try { await updateDoc(doc(firestore, 'demandes', k), {statut:'En attente', validations:[]}); }
+  catch(e){ alert(e.message); }
+};
+window.retirer = async function(k){
+  if(!confirm('Retirer ce membre ?')) return;
+  try { await updateDoc(doc(firestore, 'membres', k), {actif:false, retireLe:new Date().toISOString()}); }
+  catch(e){ alert(e.message); }
+};
+window.setRole = async function(uid, role){
+  if(!confirm(`Changer le rôle en "${role}" ?`)) return;
+  try { await updateDoc(doc(firestore, 'users', uid), {role}); }
+  catch(e){ alert(e.message); }
+};
+window.exportCSV = function(){
+  const mem = Object.entries(D.mem || {}).filter(([k,m]) => m.actif !== false);
+  const rows = [['Nom','Prénom','Catégorie','Ville','Téléphone','Email','Profession','Membre depuis','Ayants droit']];
+  mem.forEach(([k,m])=>{
+    rows.push([m.nom, m.prenom, m.categorie, m.ville, m.tel, m.email || '',
+      m.profession || '', (m.dateAdhesion || '').slice(0,10),
+      (D.ay?.[k]?.liste || []).map(a => a.nom + ' (' + a.lien + ')').join(' | ')]);
+  });
+  const csv = rows.map(r => r.map(c => '"' + String(c ?? '').replace(/"/g,'""') + '"').join(';')).join('\n');
+  const blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'membres-clinique-damour.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+};
+
+/* =========================================================
+   DÉMO / RESET
+   ========================================================= */
+window.loadDemo = async function(){
+  if(!confirm('Charger des données de démonstration ?')) return;
+  try {
+    const now = Date.now();
+    const batch = writeBatch(firestore);
+    for(const col of ['demandes','membres','ayants']){
+      const snap = await getDocs(collection(firestore, col));
+      snap.forEach(d => batch.delete(d.ref));
+    }
+    batch.set(doc(firestore,'membres','demo1'),{nom:'Loemba',prenom:'Christelle',tel:'+242 06 777 88 99',email:'christelle@exemple.cg',ville:'Brazzaville',profession:'Comptable',categorie:'Membre actif',dateAdhesion:new Date(now-86400000*180).toISOString(),validePar:['a','b'],actif:true});
+    batch.set(doc(firestore,'membres','demo2'),{nom:'Bantsimba',prenom:'Alain',tel:'+242 05 222 33 44',email:'alain@exemple.cg',ville:'Pointe-Noire',profession:'Commercial',categorie:'Membre actif',dateAdhesion:new Date(now-86400000*150).toISOString(),validePar:['a','c'],actif:true});
+    batch.set(doc(firestore,'ayants','demo1'),{membre:'demo1',maj:new Date().toISOString(),liste:[{nom:'Loemba Junior',lien:'Enfant',naissance:'2015-03-12',tel:''}]});
+    await batch.commit();
+    closeSettings();
+    alert('Démo chargée ✔');
+  } catch(e){ alert('Erreur : ' + e.message); }
+};
+window.resetAll = async function(){
+  if(!confirm('Effacer TOUTES les données ? (demandes, membres, ayants, messages)')) return;
+  if(!confirm('Vraiment sûr ? Action définitive.')) return;
+  try {
+    const batch = writeBatch(firestore);
+    for(const col of ['demandes','membres','ayants','messages']){
+      const snap = await getDocs(collection(firestore, col));
+      snap.forEach(d => batch.delete(d.ref));
+    }
+    await batch.commit();
+    closeSettings();
+    alert('Tout a été effacé.');
+  } catch(e){ alert('Erreur : ' + e.message); }
+};
+
+/* =========================================================
+   THÈME / MODAL
+   ========================================================= */
+window.toggleTheme = function(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const sysDark = window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const next = cur === 'dark' ? 'light' : (cur === 'light' ? 'dark' : (sysDark ? 'light' : 'dark'));
+  document.documentElement.setAttribute('data-theme', next);
+};
+window.openSettings = function(){ $('#settingsModal').style.display = 'flex'; };
+window.closeSettings = function(){ $('#settingsModal').style.display = 'none'; };
+
+/* =========================================================
+   DÉMARRAGE
+   ========================================================= */
+render();
+</script>
+</body></html>
